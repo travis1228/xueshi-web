@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学识 - AI 伴学导师</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #F59E0B;
+            --primary-dark: #D97706;
+            --primary-light: #FEF3C7;
+            --bg: #FAFAF9;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+            --text-secondary: #6B7280;
+            --border: #E5E7EB;
+            --success: #10B981;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: var(--text); }
+        .logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .credits { background: var(--primary-light); color: var(--primary-dark); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+        .avatar { width: 32px; height: 32px; background: #E5E7EB; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
+        main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+        .page-title { font-size: 24px; font-weight: 700; }
+        .btn-new { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+        .btn-new:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .book-card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; cursor: pointer; transition: all 0.25s; position: relative; }
+        .book-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); border-color: var(--primary); }
+        .book-cover { height: 140px; background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .book-cover::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px); }
+        .book-cover-icon { font-size: 48px; position: relative; z-index: 1; }
+        .book-badge { position: absolute; top: 12px; right: 12px; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; z-index: 2; }
+        .badge-progress { background: var(--primary); color: white; }
+        .badge-completed { background: var(--success); color: white; }
+        .badge-new { background: #6366F1; color: white; }
+        .book-info { padding: 16px; }
+        .book-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .book-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
+        .book-progress { display: flex; align-items: center; gap: 8px; }
+        .progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.3s; }
+        .progress-text { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+        .empty-state { text-align: center; padding: 80px 24px; color: var(--text-secondary); }
+        .empty-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
+        .empty-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--card-bg); border-radius: var(--radius); padding: 32px; max-width: 440px; width: 90%; box-shadow: var(--shadow-lg); }
+        .modal h2 { font-size: 20px; margin-bottom: 16px; }
+        .modal input, .modal select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; margin-bottom: 12px; outline: none; transition: border-color 0.2s; }
+        .modal input:focus, .modal select:focus { border-color: var(--primary); }
+        .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .btn-cancel { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: white; font-size: 14px; cursor: pointer; }
+        .btn-confirm { flex: 2; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
+        @media (max-width: 640px) {
+            .book-grid { grid-template-columns: 1fr; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            main { padding: 20px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <div class="logo-icon">📚</div>
+            <span>学识</span>
+        </div>
+        <div class="user-info">
+            <span class="credits">🎟️ 免费试用中</span>
+            <div class="avatar">👤</div>
+        </div>
+    </header>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">我的书架</h1>
+            <button class="btn-new" onclick="openModal()"><span>＋</span> 新学习</button>
+        </div>
+        <div class="book-grid" id="bookGrid">
+            <div class="book-card" onclick="goToCourse('hegel')">
+                <div class="book-cover" style="background: linear-gradient(135deg, #A78BFA 0%, #7C3AED 100%);">
+                    <span class="book-cover-icon">🧠</span>
+                    <span class="book-badge badge-progress">学习中</span>
+                </div>
+                <div class="book-info">
+                    <div class="book-title">黑格尔《小逻辑》</div>
+                    <div class="book-subtitle">哲学入门 · 15节课</div>
+                    <div class="book-progress">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 20%"></div></div>
+                        <span class="progress-text">3/15 课</span>
+                    </div>
+                </div>
+            </div>
+            <div class="book-card" onclick="goToCourse('strange-order')">
+                <div class="book-cover" style="background: linear-gradient(135deg, #34D399 0%, #059669 100%);">
+                    <span class="book-cover-icon">🔬</span>
+                    <span class="book-badge badge-progress">学习中</span>
+                </div>
+                <div class="book-info">
+                    <div class="book-title">《万物的古怪秩序》</div>
+                    <div class="book-subtitle">生物学 · 热力学 · 生命起源</div>
+                    <div class="book-progress">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 20%"></div></div>
+                        <span class="progress-text">3/15 课</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div class="modal-overlay" id="newModal">
+        <div class="modal">
+            <h2>📖 开始新学习</h2>
+            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">输入你想学的书或主题，AI 会为你规划课程</p>
+            <input type="text" id="bookTitle" placeholder="书名或主题，例如：《经济学原理》">
+            <select id="learnMode">
+                <option value="system">📚 系统学习（按规划课程）</option>
+                <option value="prep">📝 伴读·先备课（先梳理框架）</option>
+                <option value="discuss">💬 伴读·讨论驱动（边聊边学）</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">取消</button>
+                <button class="btn-confirm" onclick="startNewCourse()">开始学习</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openModal() { document.getElementById('newModal').classList.add('active'); }
+        function closeModal() { document.getElementById('newModal').classList.remove('active'); }
+        function goToCourse(courseId) { window.location.href = 'course.html?id=' + courseId; }
+        function startNewCourse() {
+            const title = document.getElementById('bookTitle').value.trim();
+            const mode = document.getElementById('learnMode').value;
+            if (!title) { document.getElementById('bookTitle').style.borderColor = '#EF4444'; return; }
+            const params = new URLSearchParams({ title: title, mode: mode });
+            window.location.href = 'course.html?' + params.toString();
+        }
+        document.getElementById('newModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    </script>
+</body>
+</html>
