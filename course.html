@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程详情 - 学识</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #F59E0B; --primary-dark: #D97706; --primary-light: #FEF3C7;
+            --bg: #FAFAF9; --card-bg: #FFFFFF; --text: #1F2937;
+            --text-secondary: #6B7280; --border: #E5E7EB;
+            --success: #10B981; --radius: 12px; --shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; }
+        header { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+        .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; color: var(--text-secondary); }
+        .header-title { font-size: 16px; font-weight: 600; }
+        .course-header { background: linear-gradient(135deg, #A78BFA 0%, #7C3AED 100%); color: white; padding: 32px 24px; }
+        .course-header h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+        .course-meta { font-size: 14px; opacity: 0.9; display: flex; gap: 16px; flex-wrap: wrap; }
+        .course-body { max-width: 800px; margin: 0 auto; padding: 24px; }
+        .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .lesson-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+        .lesson-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+        .lesson-item:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+        .lesson-item.active { border-color: var(--primary); background: var(--primary-light); }
+        .lesson-item.completed { opacity: 0.8; }
+        .lesson-item.locked { opacity: 0.5; cursor: not-allowed; }
+        .lesson-number { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+        .lesson-number.done { background: var(--success); color: white; }
+        .lesson-number.current { background: var(--primary); color: white; }
+        .lesson-number.pending { background: var(--border); color: var(--text-secondary); }
+        .lesson-number.lock { background: var(--border); color: var(--text-secondary); }
+        .lesson-info { flex: 1; }
+        .lesson-title { font-size: 14px; font-weight: 500; }
+        .lesson-subtitle { font-size: 12px; color: var(--text-secondary); }
+        .lesson-arrow { color: var(--text-secondary); font-size: 16px; }
+        .btn-start { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+        .btn-start:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .trial-banner { background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border: 1px solid var(--primary); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .trial-banner-icon { font-size: 24px; }
+        .trial-banner-text { font-size: 13px; color: var(--primary-dark); line-height: 1.5; }
+        .trial-banner-text strong { display: block; font-size: 14px; }
+        @media (max-width: 640px) { .course-header { padding: 24px 16px; } .course-body { padding: 16px; } }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+        <span class="header-title" id="headerTitle">课程详情</span>
+    </header>
+    <div class="course-header">
+        <h1 id="courseTitle">黑格尔《小逻辑》</h1>
+        <div class="course-meta">
+            <span>🧠 哲学入门</span><span> 15节课</span><span>️ 约10小时</span>
+        </div>
+    </div>
+    <div class="course-body">
+        <div class="trial-banner">
+            <span class="trial-banner-icon">🎁</span>
+            <div class="trial-banner-text">
+                <strong>免费试用中</strong>
+                前3节课免费，完成后可订阅解锁全部课程
+            </div>
+        </div>
+        <div class="section-title">📋 课程大纲</div>
+        <div class="lesson-list" id="lessonList"></div>
+        <button class="btn-start" id="btnStart" onclick="startLearning()">继续学习</button>
+    </div>
+    <script>
+        const lessons = [
+            { id: 1, title: '为什么要读黑格尔？', subtitle: '理解哲学思维的起点', status: 'completed' },
+            { id: 2, title: '存在、本质、概念', subtitle: '小逻辑的三大部分', status: 'completed' },
+            { id: 3, title: '存在论：从"有"到"无"', subtitle: '辩证法的第一个运动', status: 'completed' },
+            { id: 4, title: '全书地图导览', subtitle: '理解小逻辑的整体结构', status: 'current' },
+            { id: 5, title: '本质论：反思与现象', subtitle: '事物背后的根据', status: 'pending' },
+            { id: 6, title: '概念论：主观概念', subtitle: '判断与推理', status: 'pending' },
+            { id: 7, title: '概念论：客观性', subtitle: '机械性、化学性、目的性', status: 'pending' },
+            { id: 8, title: '理念：生命与认知', subtitle: '真理的实现', status: 'pending' },
+            { id: 9, title: '绝对理念', subtitle: '逻辑学的终点与起点', status: 'pending' },
+            { id: 10, title: '辩证法的核心方法', subtitle: '正反合的思维模式', status: 'pending' },
+            { id: 11, title: '黑格尔与康德', subtitle: '两种哲学路径的对比', status: 'pending' },
+            { id: 12, title: '马克思对黑格尔的继承', subtitle: '从唯心到唯物', status: 'pending' },
+            { id: 13, title: '现代哲学中的黑格尔', subtitle: '影响与争议', status: 'pending' },
+            { id: 14, title: '小逻辑的现实意义', subtitle: '为什么今天还要读', status: 'pending' },
+            { id: 15, title: '总结与拓展阅读', subtitle: '下一步的学习方向', status: 'pending' }
+        ];
+        function renderLessons() {
+            const list = document.getElementById('lessonList');
+            list.innerHTML = lessons.map(lesson => {
+                let numClass = 'pending', numContent = lesson.id, itemClass = '', arrow = '›';
+                if (lesson.status === 'completed') { numClass = 'done'; numContent = '✓'; itemClass = 'completed'; }
+                else if (lesson.status === 'current') { numClass = 'current'; itemClass = 'active'; }
+                else if (lesson.id > 3) { numClass = 'lock'; numContent = '🔒'; itemClass = 'locked'; arrow = ''; }
+                return `<div class="lesson-item ${itemClass}" onclick="${lesson.id <= 3 || lesson.status === 'current' ? `goToLesson(${lesson.id})` : ''}"><div class="lesson-number ${numClass}">${numContent}</div><div class="lesson-info"><div class="lesson-title">${lesson.title}</div><div class="lesson-subtitle">${lesson.subtitle}</div></div><span class="lesson-arrow">${arrow}</span></div>`;
+            }).join('');
+        }
+        function goToLesson(id) { window.location.href = 'learn.html?lesson=' + id; }
+        function startLearning() { const c = lessons.find(l => l.status === 'current'); goToLesson(c ? c.id : 1); }
+        renderLessons();
+    </script>
+</body>
+</html>
